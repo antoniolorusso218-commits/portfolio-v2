@@ -238,7 +238,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ================= SELECTED WORK ================= */}
+        {/* ================= SELECTED WORK ================= */}
       <section id="work" className="border-t border-white/10">
         <div className="mx-auto max-w-6xl px-6 py-28">
           <ScrollReveal>
@@ -258,9 +258,7 @@ export default function Home() {
             </div>
           </ScrollReveal>
 
-          <ScrollReveal delay={100}>
-            <WorkGallery />
-          </ScrollReveal>
+          <WorkGallery />
         </div>
       </section>
 

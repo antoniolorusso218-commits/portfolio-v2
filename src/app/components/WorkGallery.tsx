@@ -447,23 +447,29 @@ function CarouselMedia({ work }: { work: WorkItem }) {
     <>
       <button
         type="button"
-        onClick={previous}
+        onClick={(event) => {
+          event.stopPropagation();
+          previous();
+        }}
         aria-label="Previous slide"
-        className="absolute left-3 top-1/2 z-30 flex h-10 w-10 -translate-y-1/2 items-center justify-center border border-white/20 bg-black/75 text-sm text-white backdrop-blur-md transition md:opacity-0 md:group-hover/carousel:opacity-100"
+        className="absolute left-3 top-1/2 z-30 flex h-11 w-11 -translate-y-1/2 touch-manipulation items-center justify-center border border-white/20 bg-black/75 text-sm text-white backdrop-blur-md transition md:h-10 md:w-10 md:opacity-0 md:group-hover/carousel:opacity-100"
       >
         ←
       </button>
 
       <button
         type="button"
-        onClick={next}
+        onClick={(event) => {
+          event.stopPropagation();
+          next();
+        }}
         aria-label="Next slide"
-        className="absolute right-3 top-1/2 z-30 flex h-10 w-10 -translate-y-1/2 items-center justify-center border border-white/20 bg-black/75 text-sm text-white backdrop-blur-md transition md:opacity-0 md:group-hover/carousel:opacity-100"
+        className="absolute right-3 top-1/2 z-30 flex h-11 w-11 -translate-y-1/2 touch-manipulation items-center justify-center border border-white/20 bg-black/75 text-sm text-white backdrop-blur-md transition md:h-10 md:w-10 md:opacity-0 md:group-hover/carousel:opacity-100"
       >
         →
       </button>
 
-      <span className="absolute right-3 top-3 z-30 border border-white/15 bg-black/75 px-3 py-2 text-[10px] text-white/70 backdrop-blur-md md:opacity-0 md:transition md:group-hover/carousel:opacity-100">
+      <span className="pointer-events-none absolute right-3 top-3 z-30 border border-white/15 bg-black/75 px-3 py-2 text-[10px] text-white/70 backdrop-blur-md md:opacity-0 md:transition md:group-hover/carousel:opacity-100">
         {currentSlide + 1} / {work.slides.length}
       </span>
     </>
@@ -507,8 +513,12 @@ function WorkCard({
   work: WorkItem;
   onOpenEmail: (work: WorkItem) => void;
 }) {
+  const [videoPlaying, setVideoPlaying] = useState(false);
+
+  const hideOverlay = work.type === "video" && videoPlaying;
+
   return (
-    <article className="group relative mb-4 inline-block w-full break-inside-avoid overflow-hidden border border-white/10 bg-[#0b1410] align-top">
+    <article className="group relative w-full self-start overflow-hidden border border-white/10 bg-[#0b1410]">
       {work.type === "carousel" ? (
         <CarouselMedia work={work} />
       ) : work.type === "video" && work.media ? (
@@ -518,7 +528,10 @@ function WorkCard({
           loop
           playsInline
           preload="metadata"
-          className="block h-auto w-full bg-black"
+          onPlay={() => setVideoPlaying(true)}
+          onPause={() => setVideoPlaying(false)}
+          onEnded={() => setVideoPlaying(false)}
+          className="relative z-0 block h-auto w-full bg-black"
         >
           <source src={work.media} type="video/mp4" />
           Your browser does not support HTML5 video.
@@ -545,23 +558,39 @@ function WorkCard({
         />
       ) : null}
 
-      <div className="pointer-events-none absolute inset-0 z-10 bg-gradient-to-t from-black via-black/55 via-45% to-transparent transition-opacity duration-300 md:group-hover:opacity-0" />
+      <div
+        className={`pointer-events-none absolute inset-0 z-10 bg-gradient-to-t from-black via-black/55 via-45% to-transparent transition-opacity duration-300 md:group-hover:opacity-0 ${
+          hideOverlay ? "opacity-0" : "opacity-100"
+        }`}
+      />
 
-      <div className="pointer-events-none absolute left-4 top-4 z-20 transition duration-300 md:group-hover:-translate-y-2 md:group-hover:opacity-0">
+      <div
+        className={`pointer-events-none absolute left-4 top-4 z-20 transition duration-300 md:group-hover:-translate-y-2 md:group-hover:opacity-0 ${
+          hideOverlay ? "opacity-0" : "opacity-100"
+        }`}
+      >
         <span className="border border-white/15 bg-black/70 px-2.5 py-1.5 text-[10px] uppercase tracking-[0.14em] text-white/70 backdrop-blur-md">
           {work.type === "email" ? "Email" : work.type}
         </span>
       </div>
 
       {work.highlight && (
-        <div className="pointer-events-none absolute right-4 top-4 z-20 transition duration-300 md:group-hover:-translate-y-2 md:group-hover:opacity-0">
+        <div
+          className={`pointer-events-none absolute right-4 top-4 z-20 transition duration-300 md:group-hover:-translate-y-2 md:group-hover:opacity-0 ${
+            hideOverlay ? "opacity-0" : "opacity-100"
+          }`}
+        >
           <span className="border border-[#75968c]/50 bg-black/75 px-2.5 py-1.5 text-[10px] uppercase tracking-[0.1em] text-[#a9c2ba] backdrop-blur-md">
             {work.highlight}
           </span>
         </div>
       )}
 
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 p-4 transition duration-300 sm:p-5 md:group-hover:translate-y-4 md:group-hover:opacity-0">
+      <div
+        className={`pointer-events-none absolute inset-x-0 bottom-0 z-20 p-4 transition duration-300 sm:p-5 md:group-hover:translate-y-4 md:group-hover:opacity-0 ${
+          hideOverlay ? "translate-y-4 opacity-0" : "opacity-100"
+        }`}
+      >
         <p className="mb-2 text-[10px] uppercase tracking-[0.16em] text-white/40">
           {work.brand}
         </p>
@@ -632,7 +661,7 @@ export default function WorkGallery() {
                   type="button"
                   onClick={() => setActiveFilter(filter)}
                   aria-pressed={active}
-                  className={`shrink-0 border px-3 py-2 text-xs transition sm:border-0 sm:px-0 sm:py-0 sm:text-sm ${
+                  className={`shrink-0 touch-manipulation border px-3 py-2 text-xs transition sm:border-0 sm:px-0 sm:py-0 sm:text-sm ${
                     active
                       ? "border-[#75968c]/50 bg-[#75968c]/10 text-[#e8e5dc]"
                       : "border-white/10 text-white/40 hover:text-white/70"
@@ -646,7 +675,7 @@ export default function WorkGallery() {
         </div>
 
         {/* GALLERY */}
-        <div className="mx-auto max-w-5xl columns-1 gap-4 sm:columns-2 lg:columns-3">
+        <div className="mx-auto grid max-w-5xl grid-cols-1 items-start gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {filteredWorks.map((work) => (
             <WorkCard
               key={work.id}
@@ -680,7 +709,7 @@ export default function WorkGallery() {
               <button
                 type="button"
                 onClick={() => setOpenEmail(null)}
-                className="flex h-11 w-11 items-center justify-center border border-white/15 bg-black/90 text-xl text-white/70 backdrop-blur-md transition hover:border-white/40 hover:text-white"
+                className="flex h-11 w-11 touch-manipulation items-center justify-center border border-white/15 bg-black/90 text-xl text-white/70 backdrop-blur-md transition hover:border-white/40 hover:text-white"
                 aria-label="Close email"
               >
                 ×

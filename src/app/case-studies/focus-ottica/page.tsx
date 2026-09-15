@@ -295,23 +295,29 @@ function CarouselCard({ item }: { item: MediaItem }) {
 
       <button
         type="button"
-        onClick={previousSlide}
+        onClick={(event) => {
+          event.stopPropagation();
+          previousSlide();
+        }}
         aria-label="Previous image"
-        className="absolute left-3 top-1/2 z-30 flex h-10 w-10 -translate-y-1/2 items-center justify-center border border-white/20 bg-black/70 text-white opacity-0 backdrop-blur-md transition group-hover/carousel:opacity-100"
+        className="absolute left-3 top-1/2 z-30 flex h-11 w-11 -translate-y-1/2 touch-manipulation items-center justify-center border border-white/20 bg-black/75 text-white backdrop-blur-md transition md:h-10 md:w-10 md:opacity-0 md:group-hover/carousel:opacity-100"
       >
         ←
       </button>
 
       <button
         type="button"
-        onClick={nextSlide}
+        onClick={(event) => {
+          event.stopPropagation();
+          nextSlide();
+        }}
         aria-label="Next image"
-        className="absolute right-3 top-1/2 z-30 flex h-10 w-10 -translate-y-1/2 items-center justify-center border border-white/20 bg-black/70 text-white opacity-0 backdrop-blur-md transition group-hover/carousel:opacity-100"
+        className="absolute right-3 top-1/2 z-30 flex h-11 w-11 -translate-y-1/2 touch-manipulation items-center justify-center border border-white/20 bg-black/75 text-white backdrop-blur-md transition md:h-10 md:w-10 md:opacity-0 md:group-hover/carousel:opacity-100"
       >
         →
       </button>
 
-      <span className="absolute right-3 top-3 z-30 border border-white/15 bg-black/70 px-3 py-2 text-[10px] text-white/70 opacity-0 backdrop-blur-md transition group-hover/carousel:opacity-100">
+      <span className="pointer-events-none absolute right-3 top-3 z-30 border border-white/15 bg-black/75 px-3 py-2 text-[10px] text-white/70 backdrop-blur-md md:opacity-0 md:transition md:group-hover/carousel:opacity-100">
         {currentSlide + 1} / {item.slides.length}
       </span>
     </div>
@@ -322,7 +328,11 @@ function CarouselCard({ item }: { item: MediaItem }) {
    MEDIA CARD
 ======================================== */
 
-function MediaCard({ item }: { item: MediaItem }) {
+ffunction MediaCard({ item }: { item: MediaItem }) {
+  const [videoPlaying, setVideoPlaying] = useState(false);
+
+  const hideOverlay = item.type === "video" && videoPlaying;
+
   return (
     <article className="group relative mb-4 inline-block w-full break-inside-avoid overflow-hidden border border-white/10 bg-[#0b1410] align-top">
       {item.type === "carousel" ? (
@@ -334,6 +344,9 @@ function MediaCard({ item }: { item: MediaItem }) {
           loop
           playsInline
           preload="metadata"
+          onPlay={() => setVideoPlaying(true)}
+          onPause={() => setVideoPlaying(false)}
+          onEnded={() => setVideoPlaying(false)}
           className="block h-auto w-full bg-black"
         >
           <source src={item.media} type="video/mp4" />
@@ -347,23 +360,39 @@ function MediaCard({ item }: { item: MediaItem }) {
         />
       ) : null}
 
-      <div className="pointer-events-none absolute inset-0 z-10 bg-gradient-to-t from-black via-black/55 via-45% to-transparent transition-opacity duration-300 group-hover:opacity-0" />
+      <div
+        className={`pointer-events-none absolute inset-0 z-10 bg-gradient-to-t from-black via-black/55 via-45% to-transparent transition-opacity duration-300 md:group-hover:opacity-0 ${
+          hideOverlay ? "opacity-0" : "opacity-100"
+        }`}
+      />
 
-      <div className="pointer-events-none absolute left-4 top-4 z-20 transition duration-300 group-hover:-translate-y-2 group-hover:opacity-0">
+      <div
+        className={`pointer-events-none absolute left-4 top-4 z-20 transition duration-300 md:group-hover:-translate-y-2 md:group-hover:opacity-0 ${
+          hideOverlay ? "opacity-0" : "opacity-100"
+        }`}
+      >
         <span className="border border-white/15 bg-black/70 px-2.5 py-1.5 text-[10px] uppercase tracking-[0.14em] text-white/70 backdrop-blur-md">
           {item.type}
         </span>
       </div>
 
       {item.highlight && (
-        <div className="pointer-events-none absolute right-4 top-4 z-20 transition duration-300 group-hover:-translate-y-2 group-hover:opacity-0">
+        <div
+          className={`pointer-events-none absolute right-4 top-4 z-20 transition duration-300 md:group-hover:-translate-y-2 md:group-hover:opacity-0 ${
+            hideOverlay ? "opacity-0" : "opacity-100"
+          }`}
+        >
           <span className="border border-[#e8b6ac]/40 bg-black/75 px-2.5 py-1.5 text-[10px] uppercase tracking-[0.1em] text-[#e8b6ac] backdrop-blur-md">
             {item.highlight}
           </span>
         </div>
       )}
 
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 p-5 transition duration-300 group-hover:translate-y-4 group-hover:opacity-0">
+      <div
+        className={`pointer-events-none absolute inset-x-0 bottom-0 z-20 p-5 transition duration-300 md:group-hover:translate-y-4 md:group-hover:opacity-0 ${
+          hideOverlay ? "translate-y-4 opacity-0" : "opacity-100"
+        }`}
+      >
         <h3 className="font-serif text-xl font-bold leading-tight text-white">
           {item.title}
         </h3>
